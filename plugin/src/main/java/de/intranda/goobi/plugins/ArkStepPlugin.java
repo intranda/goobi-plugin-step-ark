@@ -36,10 +36,10 @@ import net.xeoh.plugins.base.annotations.PluginImplementation;
 
 @PluginImplementation
 @Log4j2
-public class SampleStepPlugin implements IStepPluginVersion2 {
+public class ArkStepPlugin implements IStepPluginVersion2 {
     
     @Getter
-    private String title = "intranda_step_sample";
+    private String title = "intranda_step_ark";
     @Getter
     private Step step;
     @Getter
@@ -57,20 +57,17 @@ public class SampleStepPlugin implements IStepPluginVersion2 {
         SubnodeConfiguration myconfig = ConfigPlugins.getProjectAndStepConfig(title, step);
         value = myconfig.getString("value", "default value"); 
         allowTaskFinishButtons = myconfig.getBoolean("allowTaskFinishButtons", false);
-        log.info("Sample step plugin initialized");
+        log.info("Ark step plugin initialized");
     }
 
     @Override
     public PluginGuiType getPluginGuiType() {
-        return PluginGuiType.FULL;
-        // return PluginGuiType.PART;
-        // return PluginGuiType.PART_AND_FULL;
-        // return PluginGuiType.NONE;
+        return PluginGuiType.NONE;
     }
 
     @Override
     public String getPagePath() {
-        return "/uii/plugin_step_sample.xhtml";
+        return "/uii/plugin_step_ark.xhtml";
     }
 
     @Override
@@ -109,7 +106,7 @@ public class SampleStepPlugin implements IStepPluginVersion2 {
         boolean successful = true;
         // your logic goes here
         
-        log.info("Sample step plugin executed");
+        log.info("Ark step plugin executed");
         if (!successful) {
             return PluginReturnValue.ERROR;
         }
