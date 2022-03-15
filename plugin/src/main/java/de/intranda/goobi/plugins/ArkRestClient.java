@@ -8,10 +8,6 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.entity.ContentType;
 
-/**
- * @author michael
- *
- */
 public class ArkRestClient {
 
 	private String uri;
@@ -19,9 +15,9 @@ public class ArkRestClient {
 	private String auth;
 
 	/**
-	 * @param Uri	URL of the ark servuce
-	 * @param NAAN	Name Assigning Authority Number
-	 * @param User	Username of the API User
+	 * @param Uri      URL of the ark servuce
+	 * @param NAAN     Name Assigning Authority Number
+	 * @param User     Username of the API User
 	 * @param Password Password of the User
 	 */
 	public ArkRestClient(String Uri, String NAAN, String User, String Password) {
@@ -46,7 +42,7 @@ public class ArkRestClient {
 	 * @throws IOException
 	 */
 	public String mintArkWithMetadata(String _target, String shoulder, String ercWho, String ercWhat, String ercWhen)
-			throws ClientProtocolException, IOException,IllegalArgumentException {
+			throws ClientProtocolException, IOException, IllegalArgumentException {
 		HashMap<String, String> metadata = new HashMap<String, String>();
 		metadata.put(ArkInternalEnumeration._target.toString(), _target);
 		metadata.put(ArkErcEnumeration.WHO.toString(), ercWho);
@@ -77,7 +73,6 @@ public class ArkRestClient {
 
 		return response.replace("success: ", "");
 	}
-
 
 	/**
 	 * Mints a new Archival Resource Key on the provided shoulder
@@ -115,26 +110,26 @@ public class ArkRestClient {
 		return Request.Get(uri + "id/" + ARK).addHeader("Accept", "text/plain").execute()
 				.handleResponse(new ArkResponseHandler());
 	}
-	
-	
+
 	/**
 	 * Updates the metadata of the given Key
 	 * 
-	 * @param ARK	Key of the entry that shall be updated
+	 * @param ARK      Key of the entry that shall be updated
 	 * @param metadata HashMap with Metadata
-	 * @return
+	 * @return true if operation was successful
 	 * @throws ClientProtocolException
 	 * @throws IOException
 	 * @throws IllegalArgumentException
 	 */
-	public String updateArk(String ARK, HashMap<String, String> metadata)
+	public boolean updateArk(String ARK, HashMap<String, String> metadata)
 			throws ClientProtocolException, IOException, IllegalArgumentException {
 		validateKeysOfMetadataHashMap(metadata);
 		Request request = Request.Post(uri + "id/" + ARK);
 		request = addHeaders(request);
-		return request.addHeader("Content-Type", "text/plain")
+		String response = request.addHeader("Content-Type", "text/plain")
 				.bodyString(createMetadataBodyString(metadata), ContentType.TEXT_PLAIN).execute()
 				.handleResponse(new ArkResponseHandler());
+		return response.startsWith("success:");
 	}
 
 	/**
@@ -148,7 +143,8 @@ public class ArkRestClient {
 	private void validateKeysOfMetadataHashMap(HashMap<String, String> metadata) throws IllegalArgumentException {
 
 		outer_loop: for (String key : metadata.keySet()) {
-			if (key == null) throw new IllegalArgumentException("Key in metadata HashMap was null");
+			if (key == null)
+				throw new IllegalArgumentException("Key in metadata HashMap was null");
 			boolean keyok = false;
 			for (ArkInternalEnumeration internal : ArkInternalEnumeration.values()) {
 				keyok = key.equals(internal.toString());
@@ -178,10 +174,11 @@ public class ArkRestClient {
 	 * @return ANVL-compliant Body string
 	 * @throws IllegalArgumentException
 	 */
-	private String createMetadataBodyString(HashMap<String, String> metadata)throws IllegalArgumentException {
+	private String createMetadataBodyString(HashMap<String, String> metadata) throws IllegalArgumentException {
 		StringBuilder sb = new StringBuilder();
 		metadata.forEach((key, value) -> {
-			if (value==null) throw new IllegalArgumentException("Value in metadata HashMap was null");
+			if (value == null)
+				throw new IllegalArgumentException("Value in metadata HashMap was null");
 			sb.append(key + ": " + escapeAnvl(value) + "\n");
 		});
 		return sb.toString();
