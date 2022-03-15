@@ -8,6 +8,10 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.entity.ContentType;
 
+/**
+ * @author michael
+ *
+ */
 public class ArkRestClient {
 
 	private String uri;
@@ -42,7 +46,7 @@ public class ArkRestClient {
 	 * @throws IOException
 	 */
 	public String mintArkWithMetadata(String _target, String shoulder, String ercWho, String ercWhat, String ercWhen)
-			throws ClientProtocolException, IOException {
+			throws ClientProtocolException, IOException,IllegalArgumentException {
 		HashMap<String, String> metadata = new HashMap<String, String>();
 		metadata.put(ArkInternalEnumeration._target.toString(), _target);
 		metadata.put(ArkErcEnumeration.WHO.toString(), ercWho);
@@ -108,10 +112,21 @@ public class ArkRestClient {
 
 	// TODO Delete this test method
 	public String getMetadata(String ARK) throws ClientProtocolException, IOException {
-		return Request.Get("https://www.arketype.ch/id/" + ARK).addHeader("Accept", "text/plain").execute()
+		return Request.Get(uri + "id/" + ARK).addHeader("Accept", "text/plain").execute()
 				.handleResponse(new ArkResponseHandler());
 	}
-
+	
+	
+	/**
+	 * Updates the metadata of the given Key
+	 * 
+	 * @param ARK	Key of the entry that shall be updated
+	 * @param metadata HashMap with Metadata
+	 * @return
+	 * @throws ClientProtocolException
+	 * @throws IOException
+	 * @throws IllegalArgumentException
+	 */
 	public String updateArk(String ARK, HashMap<String, String> metadata)
 			throws ClientProtocolException, IOException, IllegalArgumentException {
 		validateKeysOfMetadataHashMap(metadata);
@@ -133,7 +148,7 @@ public class ArkRestClient {
 	private void validateKeysOfMetadataHashMap(HashMap<String, String> metadata) throws IllegalArgumentException {
 
 		outer_loop: for (String key : metadata.keySet()) {
-
+			if (key == null) throw new IllegalArgumentException("Key in metadata HashMap was null");
 			boolean keyok = false;
 			for (ArkInternalEnumeration internal : ArkInternalEnumeration.values()) {
 				keyok = key.equals(internal.toString());
@@ -157,14 +172,16 @@ public class ArkRestClient {
 	}
 
 	/**
-	 * Helper Method that Creates the ANVL-String from a Hashmap
+	 * Helper method that creates the ANVL-String from a HashMap
 	 * 
 	 * @param metadata HashMap with names and values
 	 * @return ANVL-compliant Body string
+	 * @throws IllegalArgumentException
 	 */
-	private String createMetadataBodyString(HashMap<String, String> metadata) {
+	private String createMetadataBodyString(HashMap<String, String> metadata)throws IllegalArgumentException {
 		StringBuilder sb = new StringBuilder();
 		metadata.forEach((key, value) -> {
+			if (value==null) throw new IllegalArgumentException("Value in metadata HashMap was null");
 			sb.append(key + ": " + escapeAnvl(value) + "\n");
 		});
 		return sb.toString();
@@ -182,7 +199,7 @@ public class ArkRestClient {
 	}
 
 	/**
-	 * Helper Method that adds Authorization- and Accept- Header to a given Request
+	 * Helper method that adds Authorization- and Accept- Header to a given Request
 	 * 
 	 * @param request Request Object which needs Authorization and Accept Headers
 	 * @return returns the Request with Authorization and Accept Header

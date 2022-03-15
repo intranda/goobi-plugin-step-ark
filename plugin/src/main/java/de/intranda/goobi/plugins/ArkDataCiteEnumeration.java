@@ -9,7 +9,7 @@ public enum ArkDataCiteEnumeration {
 
 	final private String notation;
 
-	ArkDataCiteEnumeration(String notation) {
+	private ArkDataCiteEnumeration(String notation) {
 		this.notation = notation;
 	}
 

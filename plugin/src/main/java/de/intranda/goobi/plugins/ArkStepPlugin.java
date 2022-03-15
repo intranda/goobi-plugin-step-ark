@@ -112,16 +112,4 @@ public class ArkStepPlugin implements IStepPluginVersion2 {
         }
         return PluginReturnValue.FINISH;
     }
-
-	@Override
-	public Step getStep() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String getTitle() {
-		// TODO Auto-generated method stub
-		return null;
-	}
 }
