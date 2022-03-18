@@ -9,7 +9,7 @@ import java.util.HashMap;
 public class ExampleUsage {
 	
 	public void exampleCall() {
-		//create client with URI, NAN, nutzername und passwort...
+		//create client with URI, NAN, username, password
 		ArkRestClient client = new ArkRestClient("https://www.arketype.ch/", "99999", "apitest5", "vvHSbmDqiJqpKdcMJOA1");
 		
 		// generate HashMap with metadata
