@@ -10,5 +10,4 @@
 		</exec>
 		<copy file="module-main/target/plugin_intranda_step_${name}.jar" todir="/opt/digiverso/goobi/plugins/step/" overwrite="true"/>
 	</target>
-
 </project>

@@ -32,6 +32,7 @@ import org.goobi.production.enums.StepReturnValue;
 import org.goobi.production.plugin.interfaces.IStepPluginVersion2;
 
 import de.sub.goobi.config.ConfigPlugins;
+import de.sub.goobi.helper.VariableReplacer;
 import de.sub.goobi.helper.exceptions.DAOException;
 import de.sub.goobi.helper.exceptions.SwapException;
 import lombok.Getter;
@@ -57,7 +58,6 @@ public class ArkStepPlugin implements IStepPluginVersion2 {
 
 	private String returnPath;
 	private String metadataType;
-	private ArkRestClient arkClient;
 	private String uri;
 	private String naan;
 	private String apiUser;
@@ -68,6 +68,7 @@ public class ArkStepPlugin implements IStepPluginVersion2 {
 	private String publisher;
 	private String publicationYear;
 	private String resourceType;
+	private String target;
 
 	@Override
 	public void initialize(Step step, String returnPath) {
@@ -77,7 +78,7 @@ public class ArkStepPlugin implements IStepPluginVersion2 {
 		// read parameters from correct block in configuration file
 		SubnodeConfiguration myconfig = ConfigPlugins.getProjectAndStepConfig(title, step);
 
-		metadataType = myconfig.getString("metadataType", "_urn");
+		metadataType = myconfig.getString("metadataType", "ark");
 		uri = myconfig.getString("uri", "http://example.com");
 		naan = myconfig.getString("naan", "1111111");
 		apiUser = myconfig.getString("apiUser", "Nutzer");
@@ -89,6 +90,8 @@ public class ArkStepPlugin implements IStepPluginVersion2 {
 		publisher =  myconfig.getString("metadataPublisher");
 		publicationYear = myconfig.getString("metadataPublicationYear");
 		resourceType =  myconfig.getString("metadataResourceType");
+		
+		target = myconfig.getString("publicationUrl");
 		
 		log.info("Ark step plugin initialized");
 	}
@@ -139,15 +142,6 @@ public class ArkStepPlugin implements IStepPluginVersion2 {
 		boolean successful = true;
 		boolean foundExistingArk = false;
 		
-		HashMap<String, String> mdata = new HashMap<String, String>();
-		mdata.put(ArkInternalEnumeration._profile.toString(), "datacite");
-		//mdata.put(ArkInternalEnumeration._target.toString(), "http://www.example.com");
-		mdata.put(ArkDataCiteEnumeration.CREATOR.toString(), creator);
-		mdata.put(ArkDataCiteEnumeration.TITLE.toString(), dctitle);
-		mdata.put(ArkDataCiteEnumeration.PUBLICATIONYEAR.toString(), publicationYear);
-		mdata.put(ArkDataCiteEnumeration.PUBLISHER.toString(), publisher);
-		mdata.put(ArkDataCiteEnumeration.RESOURCETYPE.toString(), resourceType);
-
 		ArkRestClient arkClient = new ArkRestClient(uri, naan, apiUser, apiPassword);
 
 		try {
@@ -155,6 +149,17 @@ public class ArkStepPlugin implements IStepPluginVersion2 {
 			Fileformat ff = step.getProzess().readMetadataFile();
 			Prefs prefs = step.getProzess().getRegelsatz().getPreferences();
 			DocStruct logical = ff.getDigitalDocument().getLogicalDocStruct();
+			VariableReplacer replacer = new VariableReplacer(ff.getDigitalDocument(), prefs, step.getProzess(),step);
+			HashMap<String, String> mdata = new HashMap<String, String>();
+			creator =replacer.replace(creator);
+			mdata.put(ArkInternalEnumeration._profile.toString(), "datacite");
+			mdata.put(ArkInternalEnumeration._target.toString(),replacer.replace(target));
+			mdata.put(ArkDataCiteEnumeration.CREATOR.toString(), replacer.replace (creator));
+			mdata.put(ArkDataCiteEnumeration.TITLE.toString(), replacer.replace(dctitle));
+			mdata.put(ArkDataCiteEnumeration.PUBLICATIONYEAR.toString(), replacer.replace(publicationYear));
+			mdata.put(ArkDataCiteEnumeration.PUBLISHER.toString(), replacer.replace(publisher));
+			mdata.put(ArkDataCiteEnumeration.RESOURCETYPE.toString(), resourceType);
+			
 			if (logical.getType().isAnchor()) {
 				logical = logical.getAllChildren().get(0);
 			}
@@ -171,8 +176,7 @@ public class ArkStepPlugin implements IStepPluginVersion2 {
 			// if no ARKs found yet register a new one
 			if (!foundExistingArk) {
 				Metadata md = new Metadata(prefs.getMetadataTypeByName(metadataType));
-				String myNewArk = arkClient.mintArk(shoulder);
-				// TODO mint with Metadata
+				String myNewArk = arkClient.mintArkWithMetadata(shoulder, mdata);
 				md.setValue(myNewArk);
 				logical.addMetadata(md);
 				
@@ -182,7 +186,7 @@ public class ArkStepPlugin implements IStepPluginVersion2 {
 			}
 
 		} catch (ReadException | PreferencesException | WriteException | IOException | InterruptedException
-				| SwapException | DAOException | MetadataTypeNotAllowedException e) {
+				| SwapException | DAOException  | MetadataTypeNotAllowedException e) {
 			log.error(e);
 		}
 

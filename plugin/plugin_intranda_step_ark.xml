@@ -1,28 +1,43 @@
 <config_plugin>
-    <!--
-        order of configuration is:
-          1.) project name and step name matches
-          2.) step name matches and project is *
-          3.) project name matches and step name is *
-          4.) project name and step name are *
-	-->
-    
-    <config>
-        <!-- which projects to use for (can be more then one, otherwise use *) -->
-        <project>*</project>
-        <step>*</step>
-        <metadataType>_urn</metadataType>
-   		<uri>https://www.arketype.ch/</uri>
-		<naan>99999</naan>
-		<apiUser>apitest5</apiUser>
-		<apiPassword></apiPassword>
-		<shoulder>fk3</shoulder>
-		<metadataId>Id</metadataId>
-		<metadataCreator>creator</metadataCreator>
-		<metadataTitle>title</metadataTitle>
-		<metadataPublisher>publisher</metadataPublisher>
-		<metadataPublicationYear>publicationyear</metadataPublicationYear>
-		<metadataResourceType>Dataset</metadataResourceType>
-    </config>
+	<!-- order of configuration is: 1.) project name and step name matches 2.) 
+		step name matches and project is * 3.) project name matches and step name 
+		is * 4.) project name and step name are * -->
 
+	<config>
+		<!-- which projects to use for (can be more then one, otherwise use *) -->
+		<project>*</project>
+		<step>*</step>
+		
+		<!-- URI of the ARK API, must use httos -->
+		<uri>https://www.arketype.ch/</uri>
+		<!-- Name Assigning Number Authority -->
+		<naan>99999</naan>
+		<!-- name of the API user -->
+		<apiUser>apitest5</apiUser>
+		<!-- password of the API user -->
+		<apiPassword></apiPassword>
+		<!-- shoulder on which new ARKs shall be minted -->
+		<shoulder>fk3</shoulder>l
+		
+		<!-- Datacite Metadata fields -->
+		<metadataId>{meta.CatalogIDDigital}</metadataId>
+		<!-- metadata field datacite.creator -->
+		<metadataCreator>{meta.CreatorsAllOrigin}</metadataCreator>
+		<!-- metadata field datacite.title -->
+		<metadataTitle>{meta.TitleDocMain}</metadataTitle>
+		<!-- metadata field datacite.publisher -->
+		<metadataPublisher>{meta.PublisherName}</metadataPublisher>
+		<!-- metadata field datacite.publicationyear -->
+		<metadataPublicationYear>{meta.PublicationYear}</metadataPublicationYear>
+		<!-- metadata field datacite.resourcetype can only contain following values: 
+			Audiovisual, Collection, Dataset, Event, Image ,InteractiveResource, Model, 
+			PhysicalObject, Service, Software, Sound, Text, Workflow, Other.
+			For more information consult the API-documentation https://www.arketype.ch/doc/api -->
+		<metadataResourceType>Text</metadataResourceType>
+	
+		<!--target url ark will forward to -->
+		<publicationUrl>http://www.disney.com/{meta.CatalogIDDigital}/1/</publicationUrl>
+		<!--metadatatype in METS-File -->
+		<metadataType>ark</metadataType>
+	</config>
 </config_plugin>
