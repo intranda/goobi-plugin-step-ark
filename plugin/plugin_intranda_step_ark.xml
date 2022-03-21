@@ -11,11 +11,18 @@
         <!-- which projects to use for (can be more then one, otherwise use *) -->
         <project>*</project>
         <step>*</step>
-        
-        <!-- sample parameter -->
-        <value>test</value>
-        <!-- display button to finish the task directly from within the entered plugin -->
-        <allowTaskFinishButtons>true</allowTaskFinishButtons>
+        <metadataType>_urn</metadataType>
+   		<uri>https://www.arketype.ch/</uri>
+		<naan>99999</naan>
+		<apiUser>apitest5</apiUser>
+		<apiPassword></apiPassword>
+		<shoulder>fk3</shoulder>
+		<metadataId>Id</metadataId>
+		<metadataCreator>creator</metadataCreator>
+		<metadataTitle>title</metadataTitle>
+		<metadataPublisher>publisher</metadataPublisher>
+		<metadataPublicationYear>publicationyear</metadataPublicationYear>
+		<metadataResourceType>Dataset</metadataResourceType>
     </config>
 
 </config_plugin>
