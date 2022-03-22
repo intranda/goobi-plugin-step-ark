@@ -38,6 +38,6 @@
 		<!--target url ark will forward to -->
 		<publicationUrl>http://www.disney.com/{meta.CatalogIDDigital}/1/</publicationUrl>
 		<!--metadatatype in METS-File -->
-		<metadataType>ark</metadataType>
+		<metadataType>ARK</metadataType>
 	</config>
 </config_plugin>
