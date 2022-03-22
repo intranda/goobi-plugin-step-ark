@@ -139,7 +139,7 @@ public class ArkStepPlugin implements IStepPluginVersion2 {
 
 	@Override
 	public PluginReturnValue run() {
-		boolean successful = true;
+		boolean successful = false;
 		boolean foundExistingArk = false;
 		
 		ArkRestClient arkClient = new ArkRestClient(uri, naan, apiUser, apiPassword);
