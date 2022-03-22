@@ -46,7 +46,7 @@
 		<metadataResourceType>Text</metadataResourceType>
 
 		<!--target url ark will forward to -->
-		<publicationUrl>http://goobi.io/{meta.CatalogIDDigital}
+		<publicationUrl>https://viewer.example.org/{meta.CatalogIDDigital}
 		</publicationUrl>
 
 		<!--metadatatype in METS-File -->
