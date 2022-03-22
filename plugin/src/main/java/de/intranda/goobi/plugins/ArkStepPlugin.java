@@ -25,6 +25,7 @@ import java.util.HashMap;
 
 import org.apache.commons.configuration.SubnodeConfiguration;
 import org.goobi.beans.Step;
+import org.goobi.production.enums.LogType;
 import org.goobi.production.enums.PluginGuiType;
 import org.goobi.production.enums.PluginReturnValue;
 import org.goobi.production.enums.PluginType;
@@ -32,6 +33,7 @@ import org.goobi.production.enums.StepReturnValue;
 import org.goobi.production.plugin.interfaces.IStepPluginVersion2;
 
 import de.sub.goobi.config.ConfigPlugins;
+import de.sub.goobi.helper.Helper;
 import de.sub.goobi.helper.VariableReplacer;
 import de.sub.goobi.helper.exceptions.DAOException;
 import de.sub.goobi.helper.exceptions.SwapException;
@@ -168,8 +170,14 @@ public class ArkStepPlugin implements IStepPluginVersion2 {
 			for (Metadata md : logical.getAllMetadata()) {
 				if (md.getType().getName().equals(metadataType)) {
 					foundExistingArk = true;
-					String existingArk = md.getValue();
+					String existingArk = md.getValue().trim();
 					successful = arkClient.updateArk(existingArk, mdata);
+					if (!successful)
+						Helper.addMessageToProcessLog(step.getProcessId(),LogType.ERROR,"ARK: "+ existingArk + "could not be updated!");
+					else 
+					{
+						Helper.addMessageToProcessLog(step.getProcessId(),LogType.INFO,"ARK: "+ existingArk + "was updated sucecssfully");
+					}
 				}
 			}
 			
@@ -179,6 +187,7 @@ public class ArkStepPlugin implements IStepPluginVersion2 {
 				String myNewArk = arkClient.mintArkWithMetadata(shoulder, mdata);
 				md.setValue(myNewArk);
 				logical.addMetadata(md);
+				Helper.addMessageToProcessLog(step.getProcessId(),LogType.INFO,"ARK: " + myNewArk + "was created successfully!" );
 				
 				// save the mets file
 				step.getProzess().writeMetadataFile(ff);
@@ -188,9 +197,11 @@ public class ArkStepPlugin implements IStepPluginVersion2 {
 		} catch (ReadException | PreferencesException | WriteException | IOException | InterruptedException
 				| SwapException | DAOException  | MetadataTypeNotAllowedException e) {
 			log.error(e);
+			Helper.addMessageToProcessLog(step.getProcessId(),LogType.ERROR, e.getMessage());
 		}
 
 		log.info("Ark step plugin executed");
+		Helper.addMessageToProcessLog(step.getProcessId(),LogType.INFO, "Ark step plugin executed");
 		if (!successful) {
 			return PluginReturnValue.ERROR;
 		}

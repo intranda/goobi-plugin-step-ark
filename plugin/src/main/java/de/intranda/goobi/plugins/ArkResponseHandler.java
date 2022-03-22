@@ -25,7 +25,6 @@ public class ArkResponseHandler implements ResponseHandler<String> {
 			}
 		} else {
 			if (status == 400) {
-				entity = response.getEntity();
 				throw new ClientProtocolException(status + ": reason-> " + (entity == null ? "no response body received"
 						: EntityUtils.toString(entity, Charset.forName("utf-8"))));
 			} else
