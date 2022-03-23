@@ -81,12 +81,15 @@ public class ArkStepPlugin implements IStepPluginVersion2 {
 		SubnodeConfiguration myconfig = ConfigPlugins.getProjectAndStepConfig(title, step);
 
 		metadataType = myconfig.getString("metadataType", "ark");
+		
+		//ArkRestClient configuration parameters
 		uri = myconfig.getString("uri", "http://example.com");
 		naan = myconfig.getString("naan", "1111111");
 		apiUser = myconfig.getString("apiUser", "Nutzer");
 		apiPassword = myconfig.getString("apiPassword", "Password");
 		shoulder = myconfig.getString("shoulder", "Password");
 		
+		//datacite metadata
 		creator = myconfig.getString("metadataCreator");
 		dctitle =  myconfig.getString("metadataTitle");
 		publisher =  myconfig.getString("metadataPublisher");
@@ -143,17 +146,18 @@ public class ArkStepPlugin implements IStepPluginVersion2 {
 	public PluginReturnValue run() {
 		boolean successful = false;
 		boolean foundExistingArk = false;
-		
-		ArkRestClient arkClient = new ArkRestClient(uri, naan, apiUser, apiPassword);
 
 		try {
+			ArkRestClient arkClient = new ArkRestClient(uri, naan, apiUser, apiPassword);
+			
 			// read mets file
 			Fileformat ff = step.getProzess().readMetadataFile();
 			Prefs prefs = step.getProzess().getRegelsatz().getPreferences();
 			DocStruct logical = ff.getDigitalDocument().getLogicalDocStruct();
 			VariableReplacer replacer = new VariableReplacer(ff.getDigitalDocument(), prefs, step.getProzess(),step);
+			
+			//Create HashMap with datacite metadata
 			HashMap<String, String> mdata = new HashMap<String, String>();
-			creator =replacer.replace(creator);
 			mdata.put(ArkInternalEnumeration._profile.toString(), "datacite");
 			mdata.put(ArkInternalEnumeration._target.toString(),replacer.replace(target));
 			mdata.put(ArkDataCiteEnumeration.CREATOR.toString(), replacer.replace (creator));
@@ -195,7 +199,7 @@ public class ArkStepPlugin implements IStepPluginVersion2 {
 			}
 
 		} catch (ReadException | PreferencesException | WriteException | IOException | InterruptedException
-				| SwapException | DAOException  | MetadataTypeNotAllowedException e) {
+				| SwapException | DAOException | IllegalArgumentException | MetadataTypeNotAllowedException e) {
 			log.error(e);
 			Helper.addMessageToProcessLog(step.getProcessId(),LogType.ERROR, e.getMessage());
 		}
