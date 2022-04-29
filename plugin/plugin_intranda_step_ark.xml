@@ -45,8 +45,9 @@
 			information consult the API-documentation https://www.arketype.ch/doc/api -->
 		<metadataResourceType>Text</metadataResourceType>
 
-		<!--target url ark will forward to -->
-		<publicationUrl>https://viewer.example.org/{meta.CatalogIDDigital}
+		<!--target url ark will forward to. {pi.ark} will be replaced with the 
+			newly minted ark the standard variables work too -->
+		<publicationUrl>https://viewer.example.org/resolver?identifier:{pi.ark}
 		</publicationUrl>
 
 		<!--metadatatype in METS-File -->

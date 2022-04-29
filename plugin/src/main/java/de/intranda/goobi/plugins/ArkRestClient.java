@@ -15,7 +15,7 @@ public class ArkRestClient {
 	private String auth;
 
 	/**
-	 * @param Uri      URL of the ark servuce
+	 * @param Uri      URL of the ark service
 	 * @param NAAN     Name Assigning Authority Number
 	 * @param User     Username of the API User
 	 * @param Password Password of the User
@@ -64,14 +64,10 @@ public class ArkRestClient {
 	public String mintArkWithMetadata(String shoulder, HashMap<String, String> metadata)
 			throws ClientProtocolException, IOException, IllegalArgumentException {
 		validateKeysOfMetadataHashMap(metadata);
-		Request request = Request.Post(uri + "shoulder/ark:/" + nameAssigningAuthorityNumber + "/" + shoulder);
-		request = addHeaders(request);
-
-		String response = request.addHeader("Content-Type", "text/plain")
-				.bodyString(createMetadataBodyString(metadata), ContentType.TEXT_PLAIN).execute()
-				.handleResponse(new ArkResponseHandler());
-
-		return response.replace("success: ", "");
+		String ARK = mintArk(shoulder);
+		if (!updateArk(ARK, metadata))
+		    throw new ClientProtocolException("Unable to update " + ARK + "no URL was registered" );
+		return ARK;
 	}
 
 	/**
@@ -127,7 +123,7 @@ public class ArkRestClient {
 		Request request = Request.Post(uri + "id/" + ARK);
 		request = addHeaders(request);
 		String response = request.addHeader("Content-Type", "text/plain")
-				.bodyString(createMetadataBodyString(metadata), ContentType.TEXT_PLAIN).execute()
+				.bodyString(createMetadataBodyString(metadata, ARK), ContentType.TEXT_PLAIN).execute()
 				.handleResponse(new ArkResponseHandler());
 		return response.startsWith("success:");
 	}
@@ -174,9 +170,11 @@ public class ArkRestClient {
 	 * @return ANVL-compliant Body string
 	 * @throws IllegalArgumentException
 	 */
-	private String createMetadataBodyString(HashMap<String, String> metadata) throws IllegalArgumentException {
+	private String createMetadataBodyString(HashMap<String, String> metadata, String ARK) throws IllegalArgumentException {
 		StringBuilder sb = new StringBuilder();
 		metadata.forEach((key, value) -> {
+		    if (ARK != null && key == ArkInternalEnumeration._target.toString())
+		        value = value.replace("{pi.ark}",ARK);
 			if (value == null)
 				throw new IllegalArgumentException("Value in metadata HashMap was null");
 			sb.append(key + ": " + escapeAnvl(value) + "\n");
