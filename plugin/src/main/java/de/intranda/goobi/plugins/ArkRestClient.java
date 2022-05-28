@@ -3,6 +3,7 @@ package de.intranda.goobi.plugins;
 import java.io.IOException;
 import java.util.Base64;
 import java.util.HashMap;
+
 import org.apache.http.HttpHeaders;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.fluent.Request;
@@ -92,7 +93,7 @@ public class ArkRestClient {
 		Request request = Request.Delete(uri + "id/" + ARK);
 		request = addHeaders(request);
 
-		String response = request.addHeader("Content-Type", "text/plain").execute()
+		String response = request.addHeader("Content-Type", "text/plain; charset=UTF-8").execute()
 				.handleResponse(new ArkResponseHandler());
 		if (response.startsWith("success: ")) {
 			return true;
@@ -103,7 +104,7 @@ public class ArkRestClient {
 
 	// TODO Delete this test method
 	public String getMetadata(String ARK) throws ClientProtocolException, IOException {
-		return Request.Get(uri + "id/" + ARK).addHeader("Accept", "text/plain").execute()
+		return Request.Get(uri + "id/" + ARK).addHeader("Accept", "text/plain; charset=UTF-8").execute()
 				.handleResponse(new ArkResponseHandler());
 	}
 
@@ -120,10 +121,11 @@ public class ArkRestClient {
 	public boolean updateArk(String ARK, HashMap<String, String> metadata)
 			throws ClientProtocolException, IOException, IllegalArgumentException {
 		validateKeysOfMetadataHashMap(metadata);
+		
 		Request request = Request.Post(uri + "id/" + ARK);
-		request = addHeaders(request);
-		String response = request.addHeader("Content-Type", "text/plain")
-				.bodyString(createMetadataBodyString(metadata, ARK), ContentType.TEXT_PLAIN).execute()
+		request = addHeaders(request); //
+		String response = request.addHeader("Content-Type", "text/plain; charset=UTF-8")
+				.bodyString(createMetadataBodyString(metadata, ARK),ContentType.create("text/plain","UTF-8")).execute()
 				.handleResponse(new ArkResponseHandler());
 		return response.startsWith("success:");
 	}
@@ -200,7 +202,7 @@ public class ArkRestClient {
 	 * @return returns the Request with Authorization and Accept Header
 	 */
 	private Request addHeaders(Request request) {
-		return request.addHeader(HttpHeaders.AUTHORIZATION, "Basic " + auth).addHeader("Accept", "text/plain");
+		return request.addHeader(HttpHeaders.AUTHORIZATION, "Basic " + auth).addHeader("Accept", "text/plain; charset=UTF-8");
 	}
 
 }
