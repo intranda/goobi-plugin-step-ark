@@ -47,8 +47,7 @@
 
 		<!--target url ark will forward to. {pi.ark} will be replaced with the 
 			newly minted ark the standard variables work too -->
-		<publicationUrl>https://viewer.example.org/resolver?identifier:{pi.ark}
-		</publicationUrl>
+		<publicationUrl>https://viewer.example.org/image/{meta.CatalogIDDigital}</publicationUrl>
 
 		<!--metadatatype in METS-File -->
 		<metadataType>ARK</metadataType>
