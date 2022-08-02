@@ -35,7 +35,6 @@ import org.goobi.production.plugin.interfaces.IStepPluginVersion2;
 import de.sub.goobi.config.ConfigPlugins;
 import de.sub.goobi.helper.Helper;
 import de.sub.goobi.helper.VariableReplacer;
-import de.sub.goobi.helper.exceptions.DAOException;
 import de.sub.goobi.helper.exceptions.SwapException;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
@@ -54,183 +53,181 @@ import ugh.exceptions.WriteException;
 @Log4j2
 public class ArkStepPlugin implements IStepPluginVersion2 {
 
-	@Getter
-	private String title = "intranda_step_ark";
-	@Getter
-	private Step step;
+    @Getter
+    private String title = "intranda_step_ark";
+    @Getter
+    private Step step;
 
-	private String returnPath;
-	private String metadataType;
-	private String uri;
-	private String naan;
-	private String apiUser;
-	private String apiPassword;
-	private String shoulder;
-	private String creator;
-	private String dctitle;
-	private String publisher;
-	private String publicationYear;
-	private String resourceType;
-	private String target;
+    private String returnPath;
+    private String metadataType;
+    private String uri;
+    private String naan;
+    private String apiUser;
+    private String apiPassword;
+    private String shoulder;
+    private String creator;
+    private String dctitle;
+    private String publisher;
+    private String publicationYear;
+    private String resourceType;
+    private String target;
 
-	@Override
-	public void initialize(Step step, String returnPath) {
-		this.returnPath = returnPath;
-		this.step = step;
+    @Override
+    public void initialize(Step step, String returnPath) {
+        this.returnPath = returnPath;
+        this.step = step;
 
-		// read parameters from correct block in configuration file
-		SubnodeConfiguration myconfig = ConfigPlugins.getProjectAndStepConfig(title, step);
+        // read parameters from correct block in configuration file
+        SubnodeConfiguration myconfig = ConfigPlugins.getProjectAndStepConfig(title, step);
 
-		metadataType = myconfig.getString("metadataType", "ark");
+        metadataType = myconfig.getString("metadataType", "ark");
 
-		// ArkRestClient configuration parameters
-		uri = myconfig.getString("uri", "http://example.com");
-		naan = myconfig.getString("naan", "1111111");
-		apiUser = myconfig.getString("apiUser", "Nutzer");
-		apiPassword = myconfig.getString("apiPassword", "Password");
-		shoulder = myconfig.getString("shoulder", "Password");
+        // ArkRestClient configuration parameters
+        uri = myconfig.getString("uri", "http://example.com");
+        naan = myconfig.getString("naan", "1111111");
+        apiUser = myconfig.getString("apiUser", "Nutzer");
+        apiPassword = myconfig.getString("apiPassword", "Password");
+        shoulder = myconfig.getString("shoulder", "Password");
 
-		// datacite metadata
-		creator = myconfig.getString("metadataCreator");
-		dctitle = myconfig.getString("metadataTitle");
-		publisher = myconfig.getString("metadataPublisher");
-		publicationYear = myconfig.getString("metadataPublicationYear");
-		resourceType = myconfig.getString("metadataResourceType");
+        // datacite metadata
+        creator = myconfig.getString("metadataCreator");
+        dctitle = myconfig.getString("metadataTitle");
+        publisher = myconfig.getString("metadataPublisher");
+        publicationYear = myconfig.getString("metadataPublicationYear");
+        resourceType = myconfig.getString("metadataResourceType");
 
-		target = myconfig.getString("publicationUrl");
+        target = myconfig.getString("publicationUrl");
 
-		log.info("Ark step plugin initialized");
-	}
+        log.info("Ark step plugin initialized");
+    }
 
-	@Override
-	public PluginGuiType getPluginGuiType() {
-		return PluginGuiType.NONE;
-	}
+    @Override
+    public PluginGuiType getPluginGuiType() {
+        return PluginGuiType.NONE;
+    }
 
-	@Override
-	public String getPagePath() {
-		return "/uii/plugin_step_ark.xhtml";
-	}
+    @Override
+    public String getPagePath() {
+        return "/uii/plugin_step_ark.xhtml";
+    }
 
-	@Override
-	public PluginType getType() {
-		return PluginType.Step;
-	}
+    @Override
+    public PluginType getType() {
+        return PluginType.Step;
+    }
 
-	@Override
-	public String cancel() {
-		return "/uii" + returnPath;
-	}
+    @Override
+    public String cancel() {
+        return "/uii" + returnPath;
+    }
 
-	@Override
-	public String finish() {
-		return "/uii" + returnPath;
-	}
+    @Override
+    public String finish() {
+        return "/uii" + returnPath;
+    }
 
-	@Override
-	public int getInterfaceVersion() {
-		return 0;
-	}
+    @Override
+    public int getInterfaceVersion() {
+        return 0;
+    }
 
-	@Override
-	public HashMap<String, StepReturnValue> validate() {
-		return null;
-	}
+    @Override
+    public HashMap<String, StepReturnValue> validate() {
+        return null;
+    }
 
-	@Override
-	public boolean execute() {
-		PluginReturnValue ret = run();
-		return ret != PluginReturnValue.ERROR;
-	}
+    @Override
+    public boolean execute() {
+        PluginReturnValue ret = run();
+        return ret != PluginReturnValue.ERROR;
+    }
 
-	/**
-	 * Returns true if the DocStruct-element allows to write Arks
-	 * 
-	 * @param ds
-	 * @return
-	 */
-	private boolean isAllowedArk(DocStruct ds, String arkType) {
-		for (MetadataType metadataType : ds.getType().getAllMetadataTypes()) {
-			if (metadataType.getName().equals(arkType)) {
-				return true;
-			}
-		}
-		return false;
-	}
+    /**
+     * Returns true if the DocStruct-element allows to write Arks
+     * 
+     * @param ds
+     * @return
+     */
+    private boolean isAllowedArk(DocStruct ds, String arkType) {
+        for (MetadataType metadataType : ds.getType().getAllMetadataTypes()) {
+            if (metadataType.getName().equals(arkType)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
-	@Override
-	public PluginReturnValue run() {
-		boolean successful = false;
-		boolean foundExistingArk = false;
+    @Override
+    public PluginReturnValue run() {
+        boolean successful = false;
+        boolean foundExistingArk = false;
 
-		try {
-			ArkRestClient arkClient = new ArkRestClient(uri, naan, apiUser, apiPassword);
+        try {
+            ArkRestClient arkClient = new ArkRestClient(uri, naan, apiUser, apiPassword);
 
-			// read mets file
-			Fileformat ff = step.getProzess().readMetadataFile();
-			Prefs prefs = step.getProzess().getRegelsatz().getPreferences();
-			DocStruct logical = ff.getDigitalDocument().getLogicalDocStruct();
-			VariableReplacer replacer = new VariableReplacer(ff.getDigitalDocument(), prefs, step.getProzess(), step);
+            // read mets file
+            Fileformat ff = step.getProzess().readMetadataFile();
+            Prefs prefs = step.getProzess().getRegelsatz().getPreferences();
+            DocStruct logical = ff.getDigitalDocument().getLogicalDocStruct();
+            VariableReplacer replacer = new VariableReplacer(ff.getDigitalDocument(), prefs, step.getProzess(), step);
 
-			// Create HashMap with datacite metadata
-			HashMap<String, String> mdata = new HashMap<String, String>();
-			mdata.put(ArkInternalEnumeration._profile.toString(), "datacite");
-			mdata.put(ArkInternalEnumeration._target.toString(), replacer.replace(target));
-			mdata.put(ArkDataCiteEnumeration.CREATOR.toString(), replacer.replace(creator));
-			mdata.put(ArkDataCiteEnumeration.TITLE.toString(), replacer.replace(dctitle));
-			mdata.put(ArkDataCiteEnumeration.PUBLICATIONYEAR.toString(), replacer.replace(publicationYear));
-			mdata.put(ArkDataCiteEnumeration.PUBLISHER.toString(), replacer.replace(publisher));
-			mdata.put(ArkDataCiteEnumeration.RESOURCETYPE.toString(), resourceType);
+            // Create HashMap with datacite metadata
+            HashMap<String, String> mdata = new HashMap<>();
+            mdata.put(ArkInternalEnumeration._profile.toString(), "datacite");
+            mdata.put(ArkInternalEnumeration._target.toString(), replacer.replace(target));
+            mdata.put(ArkDataCiteEnumeration.CREATOR.toString(), replacer.replace(creator));
+            mdata.put(ArkDataCiteEnumeration.TITLE.toString(), replacer.replace(dctitle));
+            mdata.put(ArkDataCiteEnumeration.PUBLICATIONYEAR.toString(), replacer.replace(publicationYear));
+            mdata.put(ArkDataCiteEnumeration.PUBLISHER.toString(), replacer.replace(publisher));
+            mdata.put(ArkDataCiteEnumeration.RESOURCETYPE.toString(), resourceType);
 
-			if (logical.getType().isAnchor()) {
-				logical = logical.getAllChildren().get(0);
-			}
+            if (logical.getType().isAnchor()) {
+                logical = logical.getAllChildren().get(0);
+            }
 
-			// find existing ARKs
-			for (Metadata md : logical.getAllMetadata()) {
-				if (md.getType().getName().equals(metadataType)) {
-					foundExistingArk = true;
-					String existingArk = md.getValue().trim();
-					successful = arkClient.updateArk(existingArk, mdata);
-					if (!successful)
-						Helper.addMessageToProcessLog(step.getProcessId(), LogType.ERROR,
-								"ARK: " + existingArk + " could not be updated!");
-					else {
-						Helper.addMessageToProcessLog(step.getProcessId(), LogType.INFO,
-								"ARK: " + existingArk + " was updated sucecssfully");
-					}
-				}
-			}
+            // find existing ARKs
+            for (Metadata md : logical.getAllMetadata()) {
+                if (md.getType().getName().equals(metadataType)) {
+                    foundExistingArk = true;
+                    String existingArk = md.getValue().trim();
+                    successful = arkClient.updateArk(existingArk, mdata);
+                    if (!successful) {
+                        Helper.addMessageToProcessLog(step.getProcessId(), LogType.ERROR, "ARK: " + existingArk + " could not be updated!");
+                    } else {
+                        Helper.addMessageToProcessLog(step.getProcessId(), LogType.INFO, "ARK: " + existingArk + " was updated sucecssfully");
+                    }
+                }
+            }
 
-			// if no ARKs found yet register a new one
-			if (!foundExistingArk) {
-				if (isAllowedArk(logical, metadataType)) {
-					Metadata md = new Metadata(prefs.getMetadataTypeByName(metadataType));
-					String myNewArk = arkClient.mintArkWithMetadata(shoulder, mdata);
-					md.setValue(myNewArk);
-					logical.addMetadata(md);
-					Helper.addMessageToProcessLog(step.getProcessId(), LogType.INFO,
-							"ARK: " + myNewArk + " was created successfully!");
+            // if no ARKs found yet register a new one
+            if (!foundExistingArk) {
+                if (isAllowedArk(logical, metadataType)) {
+                    Metadata md = new Metadata(prefs.getMetadataTypeByName(metadataType));
+                    String myNewArk = arkClient.mintArkWithMetadata(shoulder, mdata);
+                    md.setValue(myNewArk);
+                    logical.addMetadata(md);
+                    Helper.addMessageToProcessLog(step.getProcessId(), LogType.INFO, "ARK: " + myNewArk + " was created successfully!");
 
-					// save the mets file
-					step.getProzess().writeMetadataFile(ff);
-					successful = true;
-				} else {
-					throw new MetadataTypeNotAllowedException("This Metadataelement (" + metadataType + ") is not allowed for the TopStruct, please update the ruleset!");
-				}
-			}
+                    // save the mets file
+                    step.getProzess().writeMetadataFile(ff);
+                    successful = true;
+                } else {
+                    throw new MetadataTypeNotAllowedException(
+                            "This Metadataelement (" + metadataType + ") is not allowed for the TopStruct, please update the ruleset!");
+                }
+            }
 
-		} catch (ReadException | PreferencesException | WriteException | IOException | InterruptedException
-				| SwapException | DAOException | IllegalArgumentException | MetadataTypeNotAllowedException e) {
-			log.error(e);
-			Helper.addMessageToProcessLog(step.getProcessId(), LogType.ERROR, e.getMessage());
-		}
+        } catch (ReadException | PreferencesException | WriteException | IOException | SwapException | IllegalArgumentException
+                | MetadataTypeNotAllowedException e) {
+            log.error(e);
+            Helper.addMessageToProcessLog(step.getProcessId(), LogType.ERROR, e.getMessage());
+        }
 
-		log.info("Ark step plugin executed");
-		Helper.addMessageToProcessLog(step.getProcessId(), LogType.INFO, "Ark step plugin executed");
-		if (!successful) {
-			return PluginReturnValue.ERROR;
-		}
-		return PluginReturnValue.FINISH;
-	}
+        log.info("Ark step plugin executed");
+        Helper.addMessageToProcessLog(step.getProcessId(), LogType.INFO, "Ark step plugin executed");
+        if (!successful) {
+            return PluginReturnValue.ERROR;
+        }
+        return PluginReturnValue.FINISH;
+    }
 }
