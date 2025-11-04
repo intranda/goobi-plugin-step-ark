@@ -3,6 +3,10 @@ title: Erzeugen von Archival Resource Keys (ARK)
 identifier: intranda_step_ark
 published: true
 description: Goobi Step Plugin für die Erstellung von Archival Resource Keys (ARK) mit Metadaten nach dem DataCite Schema.
+keywords:
+    - Goobi workflow
+    - Plugin
+    - Step Plugin
 ---
 ## Einführung
 Die vorliegende Dokumentation beschreibt die Installation, die Konfiguration und den Einsatz des Step Plugins für die Generierung von ARK-Identifiern in Goobi workflow.
